@@ -4,6 +4,7 @@ import asyncio
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import httpx
 
@@ -81,6 +82,9 @@ class BackendIntegrationTests(unittest.TestCase):
         self.assertIn("/static/script.js", root.text)
         self.assertIn('id="prefLearningStyle"', root.text)
         self.assertIn('id="recommendBtn"', root.text)
+        self.assertIn('id="btn-catalogue"', root.text)
+        self.assertIn('id="content-catalogue"', root.text)
+        self.assertIn('id="catalogueSearch"', root.text)
         self.assertEqual(static_script.status_code, 200)
         self.assertIn("fetch('/api/search'", static_script.text)
         self.assertIn("fetch('/api/recommend'", static_script.text)
@@ -89,6 +93,14 @@ class BackendIntegrationTests(unittest.TestCase):
         self.assertEqual(courses.status_code, 200)
         self.assertEqual(courses.json()["total"], 29)
         self.assertIn("synthetic_notice", courses.json())
+
+    def test_catalogue_remains_complete_when_semantic_threshold_changes(self):
+        with patch("ml_engine.MIN_SEMANTIC_RELEVANCE", 1.0):
+            courses = asyncio.run(self._request("GET", "/api/courses"))
+
+        body = courses.json()
+        self.assertEqual(courses.status_code, 200)
+        self.assertEqual(body["total"], len(body["courses"]))
 
     def test_semantic_search_contract_and_query_validation(self):
         response = asyncio.run(self._request(

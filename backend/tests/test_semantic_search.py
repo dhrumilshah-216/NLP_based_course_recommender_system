@@ -4,12 +4,18 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 BACKEND_DIR = Path(__file__).parent.parent
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
-from ml_engine import CourseRecommenderEngine, _course_search_text
+from ml_engine import (
+    CourseRecommenderEngine,
+    _configured_min_relevance,
+    _course_search_text,
+)
+from recommendations import PersonalizedCourseRecommender
 
 
 class FakeSentenceModel:
@@ -80,10 +86,11 @@ class TestSemanticCourseSearch(unittest.TestCase):
     def test_natural_language_queries_rank_matching_courses(self):
         engine = self.make_engine()
 
-        python_result = engine.search("I want to learn Python and machine learning")
-        paraphrase_result = engine.search("I want to learn patterns from data")
-        career_result = engine.search("I want a career in data analytics")
-        practical_result = engine.search("I prefer hands-on practical work")
+        with patch("ml_engine.MIN_SEMANTIC_RELEVANCE", -1.0):
+            python_result = engine.search("I want to learn Python and machine learning")
+            paraphrase_result = engine.search("I want to learn patterns from data")
+            career_result = engine.search("I want a career in data analytics")
+            practical_result = engine.search("I prefer hands-on practical work")
 
         self.assertEqual(python_result[0]["course_id"], "CS101")
         self.assertEqual(paraphrase_result[0]["course_id"], "CS101")
@@ -126,14 +133,79 @@ class TestSemanticCourseSearch(unittest.TestCase):
 
     def test_unknown_topic_and_ties_have_stable_order(self):
         engine = self.make_engine()
-        first = engine.search("an unrelated astronomy topic", top_k=10)
-        second = engine.search("an unrelated astronomy topic", top_k=10)
+        with patch("ml_engine.MIN_SEMANTIC_RELEVANCE", -1.0):
+            first = engine.search("an unrelated astronomy topic", top_k=10)
+            second = engine.search("an unrelated astronomy topic", top_k=10)
 
         self.assertEqual(
             [course["course_id"] for course in first],
             [course["course_id"] for course in second],
         )
         self.assertEqual(first[0]["relevance_score"], 0.0)
+
+    def test_minimum_relevance_filters_courses_without_filling_top_k(self):
+        engine = self.make_engine()
+
+        with patch("ml_engine.MIN_SEMANTIC_RELEVANCE", 0.5):
+            results = engine.search("Python", top_k=10)
+
+        self.assertEqual([course["course_id"] for course in results], ["CS101"])
+        self.assertTrue(all(course["relevance_score"] >= 0.5 for course in results))
+
+    def test_no_courses_below_minimum_relevance(self):
+        engine = self.make_engine()
+
+        with patch("ml_engine.MIN_SEMANTIC_RELEVANCE", 0.01):
+            results = engine.search("unrelated astronomy")
+
+        self.assertEqual(results, [])
+
+    def test_threshold_uses_unrounded_cosine_value(self):
+        engine = self.make_engine()
+        near_threshold = 0.30004
+        engine.course_embeddings[1] = [
+            near_threshold,
+            (1.0 - near_threshold ** 2) ** 0.5,
+            0.0,
+        ]
+
+        with patch("ml_engine.MIN_SEMANTIC_RELEVANCE", 0.30003):
+            results = engine.search("Python", top_k=10)
+
+        self.assertIn("BA201", [course["course_id"] for course in results])
+        ba_result = next(course for course in results if course["course_id"] == "BA201")
+        self.assertEqual(ba_result["relevance_score"], 0.3)
+
+    def test_personalized_ranking_does_not_restore_courses_below_semantic_gate(self):
+        engine = self.make_engine()
+        engine.course_embeddings[1] = [0.8, 0.6, 0.0]
+        recommender = PersonalizedCourseRecommender(
+            engine,
+            engine.courses,
+            profiles=[],
+            aggregates=[],
+        )
+
+        with patch("ml_engine.MIN_SEMANTIC_RELEVANCE", 0.9):
+            result = recommender.recommend(
+                query="Python",
+                top_k=10,
+                preferences={"difficulty": "low"},
+            )
+
+        self.assertEqual(
+            [course["course_id"] for course in result["recommendations"]],
+            ["CS101"],
+        )
+        self.assertTrue(
+            all(course["semantic_relevance"] >= 0.9 for course in result["recommendations"])
+        )
+
+    def test_minimum_relevance_configuration_requires_valid_cosine_score(self):
+        self.assertEqual(_configured_min_relevance("0.3"), 0.3)
+        for invalid in ("not-a-score", "nan", "inf", "-1.01", "1.01"):
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                _configured_min_relevance(invalid)
 
     def test_course_embeddings_are_persisted_and_reused(self):
         first_engine = self.make_engine()

@@ -6,6 +6,7 @@ Implements cached bi-encoder semantic course search.
 import hashlib
 import json
 import logging
+import math
 import os
 import re
 import sys
@@ -18,6 +19,21 @@ sys.path.insert(0, str(Path(__file__).parent))
 from courses_data import COURSES_DATABASE
 
 BASE_MODEL_NAME = os.environ.get("BASE_MODEL_NAME", "all-MiniLM-L6-v2")
+
+
+def _configured_min_relevance(value: str) -> float:
+    try:
+        threshold = float(value)
+    except (TypeError, ValueError) as error:
+        raise ValueError("MIN_SEMANTIC_RELEVANCE must be a finite cosine score between -1 and 1.") from error
+    if not math.isfinite(threshold) or not -1.0 <= threshold <= 1.0:
+        raise ValueError("MIN_SEMANTIC_RELEVANCE must be a finite cosine score between -1 and 1.")
+    return threshold
+
+
+MIN_SEMANTIC_RELEVANCE = _configured_min_relevance(
+    os.environ.get("MIN_SEMANTIC_RELEVANCE", "0.30")
+)
 _PROJECT_DIR = Path(__file__).parent.parent
 CUSTOM_MODEL_PATH = Path(
     os.environ.get("MODEL_PATH", str(_PROJECT_DIR / "models" / "trained_course_model"))
@@ -301,6 +317,10 @@ class CourseRecommenderEngine:
                 self._indexed_course_indices[index],
             )
             for index, embedding in enumerate(self.course_embeddings)
+        ]
+        scored_courses = [
+            result for result in scored_courses
+            if result[0] >= MIN_SEMANTIC_RELEVANCE
         ]
         scored_courses.sort(key=lambda result: (-result[0], result[1]))
 
