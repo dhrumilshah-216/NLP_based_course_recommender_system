@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Recommender</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>Course Recommender</h1>
+            <p class="subtitle">Semantic Course Search, Personalized Recommendations & NLP Analysis</p>
+        </header>
+
+        <!-- Tab Navigation -->
+        <div class="tabs">
+            <button class="tab-btn active" id="btn-semantic" onclick="switchTab('semantic')">Semantic Search</button>
+            <button class="tab-btn" id="btn-classical" onclick="switchTab('classical')">Classical NLP Analysis</button>
+        </div>
+
+        <!-- TAB 1: Semantic Search Content -->
+        <div id="content-semantic" class="tab-content active">
+            <div class="search-section">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Describe what you want to learn..." autocomplete="off" aria-label="Describe what you want to learn">
+                    <button id="searchBtn" class="search-btn" onclick="performSearch()">
+                        <span class="btn-text">Search</span>
+                        <span class="btn-loader" style="display: none;">Processing</span>
+                    </button>
+                </div>
+                <details class="preference-details">
+                    <summary>Personalize recommendations (optional)</summary>
+                    <div class="preference-grid">
+                        <label>Interests
+                            <input id="prefInterests" type="text" maxlength="500" placeholder="e.g. Python, analytics">
+                        </label>
+                        <label>Career goal
+                            <input id="prefCareerGoal" type="text" maxlength="500" placeholder="e.g. data analyst">
+                        </label>
+                        <label>Preferred difficulty
+                            <select id="prefDifficulty">
+                                <option value="">No preference</option>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </label>
+                        <label>Preferred workload
+                            <select id="prefWorkload">
+                                <option value="">No preference</option>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </label>
+                        <label>Learning style
+                            <select id="prefLearningStyle">
+                                <option value="">No preference</option>
+                                <option value="practical">Practical / hands-on</option>
+                                <option value="theoretical">Theoretical</option>
+                            </select>
+                        </label>
+                        <label>Math complexity
+                            <select id="prefMathComplexity">
+                                <option value="">No preference</option>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </label>
+                        <label>Scoring preference
+                            <select id="prefScoring">
+                                <option value="">No preference</option>
+                                <option value="high">Higher scoring potential</option>
+                                <option value="low">Lower scoring potential</option>
+                            </select>
+                        </label>
+                        <label class="completed-courses-label">Completed course IDs (optional)
+                            <input id="completedCourses" type="text" maxlength="1000" placeholder="e.g. CSC101, IT201">
+                        </label>
+                        <label class="prerequisite-option">
+                            <input id="enforcePrerequisites" type="checkbox">
+                            Exclude courses with known unmet prerequisites
+                        </label>
+                    </div>
+                    <button id="recommendBtn" class="search-btn recommend-btn" type="button" onclick="performRecommendations()">
+                        <span class="btn-text">Get personalized recommendations</span>
+                        <span class="btn-loader" style="display: none;">Processing</span>
+                    </button>
+                </details>
+                <div class="suggestions">
+                    <span class="suggestion-label">Try:</span>
+                    <button class="suggestion-chip" onclick="fillSearch('I want to build an AI assistant that reads emails')">AI assistant</button>
+                    <button class="suggestion-chip" onclick="fillSearch('I need to learn cybersecurity and ethical hacking')">Cybersecurity</button>
+                </div>
+            </div>
+            
+            <section id="resultsSection" class="results-section" style="display: none;">
+                <div class="results-header">
+                    <h2 id="resultsHeading">Course matches</h2>
+                    <p id="resultsInfo" role="status" aria-live="polite"></p>
+                </div>
+                <div id="resultsContainer" class="results-container"></div>
+            </section>
+        </div>
+
+        <!-- TAB 2: Classical NLP Content -->
+        <div id="content-classical" class="tab-content">
+            <div class="search-section">
+                <div class="search-box">
+                    <input type="text" id="classicalInput" placeholder="Enter text to analyze..." autocomplete="off" aria-label="Enter text to analyze">
+                    <button id="classicalBtn" class="search-btn" onclick="performClassicalAnalysis()">
+                        <span class="btn-text">Analyze Text</span>
+                        <span class="btn-loader" style="display: none;">Processing</span>
+                    </button>
+                </div>
+                <p class="tab-hint">Analyzes text using foundational NLP concepts.</p>
+            </div>
+            
+            <section id="classicalResults" class="results-section" style="display: none;">
+                <div class="results-header">
+                    <h2>Analysis Report</h2>
+                </div>
+                <div id="classicalContainer" class="classical-container"></div>
+            </section>
+        </div>
+
+        <footer class="footer">
+            <!-- <p>Built with FastAPI, Sentence-Transformers, NLTK, and SpaCy.</p> -->
+        </footer>
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+</html>

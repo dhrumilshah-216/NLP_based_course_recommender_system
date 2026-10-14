@@ -1,0 +1,20 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+sentence-transformers>=3.0.0
+torch>=2.4.0
+numpy>=1.26.0
+pydantic>=2.5.0
+python-multipart==0.0.9
+datasets>=2.20.0
+accelerate>=1.1.0
+
+# Classical NLP Libraries
+nltk==3.8.1
+spacy==3.7.5
+scikit-learn==1.5.1
+gensim==4.3.3
+
+# Dataset handling (Phase 1+ — CSV loading and future DataFrame operations)
+pandas>=2.0.0
+
+# NOTE: After installing, run: python -m spacy download en_core_web_sm

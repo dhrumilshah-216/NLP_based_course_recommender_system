@@ -1,0 +1,18 @@
+file,field,data_type,description
+courses.csv,course_id,string,Unique fictional course identifier.
+courses.csv,course_title,string,Fictional course title.
+courses.csv,credits_theory_plus_practical,string,Illustrative theory+practical credit notation; not an official institution policy.
+courses.csv,assessment_split_internal_external,string,Illustrative internal/external assessment split; verify/adjust if using a real curriculum.
+courses.csv,difficulty_label,category,Synthetic course-level design label: Low/Medium/High; not empirical difficulty.
+courses.csv,math_complexity,category,Synthetic label for mathematical complexity: Low/Medium/High.
+courses.csv,workload_label,category,Synthetic workload assumption: Low/Medium/High.
+courses.csv,career_relevance,category,Synthetic design estimate: Low/Medium/High.
+reviews.csv,review_text,string,"Synthetic review text, not genuine student/alumni feedback."
+reviews.csv,overall_sentiment,category,Synthetic overall sentiment label: positive/mixed/negative/neutral.
+reviews.csv,overall_rating_synthetic,integer 1-5,Synthetic rating generated for prototype testing only.
+review_aspects.csv,aspect,category,One aspect label per review-aspect pair.
+review_aspects.csv,sentiment,category,Synthetic ground-truth aspect sentiment: positive/negative/neutral/mixed.
+review_aspects.csv,aspect_rating_synthetic,integer 1-5,Synthetic rating associated with the aspect label.
+student_profiles.csv,*_priority_1_to_5,integer 1-5,Synthetic preference weight; 1 is low priority and 5 is high priority.
+queries_and_relevance.csv,expected_relevant_course_ids,semicolon-separated IDs,Synthetic expected relevance labels; manually inspect before using for formal metrics.
+course_synthetic_aggregates.csv,*_synthetic_mean_score,float,Derived only from synthetic reviews; must never be presented as real course statistics.

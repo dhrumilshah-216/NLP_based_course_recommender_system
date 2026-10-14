@@ -1,0 +1,36 @@
+{
+  "institution": {
+    "institution_name": "My College",
+    "institution_type": "Fictional undergraduate institution for an NLP mini project",
+    "data_status": "Synthetic prototype dataset",
+    "notice": "All course records, assessments, review text, ratings, profiles, and relevance labels are synthetic. Course structures are inspired by patterns discussed in the supplied research report and are not official records of any institution."
+  },
+  "course_count": 29,
+  "review_count": 870,
+  "reviews_per_course": 30,
+  "review_aspect_rows": 2036,
+  "student_profile_count": 10,
+  "query_count": 20,
+  "review_aspects": [
+    "difficulty",
+    "workload",
+    "scoring_potential",
+    "teaching_quality",
+    "practical_value",
+    "career_relevance"
+  ],
+  "sentiment_labels": [
+    "positive",
+    "negative",
+    "neutral",
+    "mixed"
+  ],
+  "all_data_synthetic": true,
+  "limitations": [
+    "Course metadata is synthetic and reference-inspired, not official college data.",
+    "Review text and ratings are synthetic, not real student/alumni feedback.",
+    "Course-level aggregates are derived from synthetic labels only.",
+    "Expected relevance labels are illustrative and should be manually checked.",
+    "Template-based generation can make the language less diverse than authentic reviews."
+  ]
+}
